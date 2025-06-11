@@ -12,7 +12,8 @@ def prepare_dataset(df, pair):
     df = add_technical_indicators(df)
     df = df.dropna()
     features = ['SMA_10', 'SMA_20', 'RSI', 'BB_High', 'BB_Low', 'MACD', 'MACD_Signal', 'ATR',
-                'Stoch_K', 'Stoch_D', 'unemployment_rate', 'nonfarm_payrolls', '10-year_treasury_rate']
+                'Stoch_K', 'Stoch_D', 'ADX', 'OBV', 'CCI',
+                'unemployment_rate', 'nonfarm_payrolls', '10-year_treasury_rate']
     # Exclude sentiment if it's constant (non-varying)
     if 'sentiment' in df.columns and df['sentiment'].nunique() > 1:
         features.append('sentiment')
@@ -28,7 +29,7 @@ def prepare_dataset(df, pair):
 # Add technical indicators to the dataset
 def add_technical_indicators(df):
     # Check required columns
-    required_cols = ['2. high', '3. low', '4. close']
+    required_cols = ['2. high', '3. low', '4. close', '5. volume']
     if not all(col in df.columns for col in required_cols):
         print(f"Error: Missing required columns {required_cols} in DataFrame")
         return df
@@ -46,6 +47,11 @@ def add_technical_indicators(df):
     stoch = ta.momentum.StochasticOscillator(high=df['2. high'], low=df['3. low'], close=df['4. close'], window=14, smooth_window=3)
     df['Stoch_K'] = stoch.stoch()
     df['Stoch_D'] = stoch.stoch_signal()
+    adx = ta.trend.ADXIndicator(high=df['2. high'], low=df['3. low'], close=df['4. close'], window=14)
+    df['ADX'] = adx.adx()
+    df['OBV'] = ta.volume.on_balance_volume(df['4. close'], df['5. volume'])
+    cci = ta.trend.CCIIndicator(high=df['2. high'], low=df['3. low'], close=df['4. close'], window=20)
+    df['CCI'] = cci.cci()
     return df
 
 # Train and evaluate the model for a given pair
