@@ -22,7 +22,7 @@ if not all([ALPHA_VANTAGE_API_KEY, FRED_API_KEY, NEWS_API_KEY]):
 
 # Define start and end dates for historical data
 start_date = "2019-06-01"
-end_date = "2025-06-06"
+end_date = "2025-06-26"
 
 # Create historical_data directory if it doesn't exist
 os.makedirs('historical_data', exist_ok=True)
@@ -32,8 +32,9 @@ fred = Fred(api_key=FRED_API_KEY)
 analyzer = SentimentIntensityAnalyzer()
 
 # Forex pairs and XAUUSD
-pairs = ['GBPUSD=X', 'USDJPY=X', 'AUDUSD=X']  # yfinance forex symbol format
+pairs = ['GBPUSD=X', 'USDJPY=X', 'AUDUSD=X']
 xauusd_ticker = 'GC=F'
+vix_ticker = '^VIX'
 
 # Fetch historical price data for a currency pair
 def fetch_historical_price_data(pair, start_date=start_date, end_date=end_date):
@@ -52,6 +53,19 @@ def fetch_historical_price_data(pair, start_date=start_date, end_date=end_date):
         print(f"Error fetching historical price data for {pair}: {e}")
         return None
 
+# Fetch historical VIX data
+def fetch_historical_vix_data(start_date=start_date, end_date=end_date):
+    try:
+        ticker = yf.Ticker(vix_ticker)
+        data = ticker.history(start=start_date, end=end_date, interval="1d")
+        if data.empty:
+            raise ValueError("No VIX data returned")
+        data.index = data.index.tz_localize(None)
+        return data[['Close']].rename(columns={'Close': 'vix'})
+    except Exception as e:
+        print(f"Error fetching historical VIX data: {e}")
+        return None
+
 # Fetch historical sentiment data (limited by News API free tier to ~30 days)
 def fetch_historical_sentiment_data(asset):
     url = f"https://newsapi.org/v2/everything?q={asset}&from={end_date}&to={end_date}&apiKey={NEWS_API_KEY}"
@@ -66,40 +80,48 @@ def fetch_historical_sentiment_data(asset):
 # Fetch historical fundamental data from FRED
 def fetch_historical_fundamental_data(start_date=start_date, end_date=end_date):
     indicators = {
-        'UNRATE': 'Unemployment Rate',
-        'PAYEMS': 'Nonfarm Payrolls',
-        'DGS10': '10-Year Treasury Rate'
+        'UNRATE': 'unemployment_rate',
+        'PAYEMS': 'nonfarm_payrolls',
+        'DGS10': '10-year_treasury_rate'
     }
-    data = pd.DataFrame(index=pd.date_range(start=start_date, end=end_date, freq='D', tz=None))  # Naive index
+    data = pd.DataFrame(index=pd.date_range(start=start_date, end=end_date, freq='D', tz=None))
     for ind, desc in indicators.items():
         try:
             series = fred.get_series(ind, observation_start=start_date, observation_end=end_date)
-            # Convert to naive index immediately after fetch
             if series.index.tz is not None:
                 series.index = series.index.tz_localize(None)
-            data[desc.lower().replace(' ', '_')] = series.reindex(data.index, method='ffill').fillna(method='bfill')
+            data[desc] = series.reindex(data.index, method='ffill').fillna(method='bfill')
         except Exception as e:
             print(f"Error fetching historical {desc}: {e}")
     return data
 
 # Main execution
 if __name__ == "__main__":
+    # Fetch VIX data
+    vix_data = fetch_historical_vix_data()
+    
     for pair in pairs:
         price_data = fetch_historical_price_data(pair)
         if price_data is not None:
             fundamental_data = fetch_historical_fundamental_data()
             combined_data = price_data.join(fundamental_data, how='left')
-            combined_data.to_csv(f'historical_data/{pair.replace("=", "")}_daily.csv')
+            if vix_data is not None:
+                combined_data = combined_data.join(vix_data, how='left')
+                combined_data['vix'] = combined_data['vix'].fillna(method='ffill')
+            combined_data.to_csv(f'historical_data/{pair.replace("=X", "")}_daily.csv')
             sentiment = fetch_historical_sentiment_data(pair.replace("=X", ""))
-            with open(f'historical_data/{pair.replace("=", "")}_sentiment.txt', 'w') as f:
+            with open(f'historical_data/{pair.replace("=X", "")}_sentiment.txt', 'w') as f:
                 f.write(str(sentiment))
 
     xauusd_data = fetch_historical_price_data(xauusd_ticker)
     if xauusd_data is not None:
         fundamental_data = fetch_historical_fundamental_data()
         combined_data = xauusd_data.join(fundamental_data, how='left')
+        if vix_data is not None:
+            combined_data = combined_data.join(vix_data, how='left')
+            combined_data['vix'] = combined_data['vix'].fillna(method='ffill')
         combined_data.to_csv('historical_data/XAUUSD_daily.csv')
-        sentiment = fetch_historical_sentiment_data("gold")  # Sentiment for XAUUSD
+        sentiment = fetch_historical_sentiment_data("gold")
         with open('historical_data/XAUUSD_sentiment.txt', 'w') as f:
             f.write(str(sentiment))
 
