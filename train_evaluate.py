@@ -1,34 +1,14 @@
 import pandas as pd
 import numpy as np
 import ta
-from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import accuracy_score
 import joblib
 import os
 
-# Load and prepare dataset for training
-def prepare_dataset(df, pair):
-    df = add_technical_indicators(df)
-    df = df.dropna()
-    features = ['SMA_10', 'SMA_20', 'RSI', 'BB_High', 'BB_Low', 'MACD', 'MACD_Signal', 'ATR',
-                'Stoch_K', 'Stoch_D', 'ADX', 'OBV', 'CCI',
-                'unemployment_rate', 'nonfarm_payrolls', '10-year_treasury_rate']
-    # Exclude sentiment if it's constant (non-varying)
-    if 'sentiment' in df.columns and df['sentiment'].nunique() > 1:
-        features.append('sentiment')
-    # Check if all features exist in the DataFrame
-    missing_features = [f for f in features if f not in df.columns]
-    if missing_features:
-        print(f"Error: Missing features {missing_features} for {pair}. Skipping...")
-        return None, None, None, None
-    X = df[features]
-    y = (df['4. close'].shift(-1) > df['4. close']).astype(int)  # Next day price increase
-    return X, y, df, features
-
 # Add technical indicators to the dataset
 def add_technical_indicators(df):
-    # Check required columns
     required_cols = ['2. high', '3. low', '4. close', '5. volume']
     if not all(col in df.columns for col in required_cols):
         print(f"Error: Missing required columns {required_cols} in DataFrame")
@@ -54,10 +34,26 @@ def add_technical_indicators(df):
     df['CCI'] = cci.cci()
     return df
 
+# Load and prepare dataset for training
+def prepare_dataset(df, pair):
+    df = add_technical_indicators(df)
+    df = df.dropna()
+    features = ['SMA_10', 'SMA_20', 'RSI', 'BB_High', 'BB_Low', 'MACD', 'MACD_Signal', 'ATR',
+                'Stoch_K', 'Stoch_D', 'ADX', 'OBV', 'CCI',
+                'unemployment_rate', 'nonfarm_payrolls', '10-year_treasury_rate', 'vix']
+    if 'sentiment' in df.columns and df['sentiment'].nunique() > 1:
+        features.append('sentiment')
+    missing_features = [f for f in features if f not in df.columns]
+    if missing_features:
+        print(f"Error: Missing features {missing_features} for {pair}. Skipping...")
+        return None, None, None, None
+    X = df[features]
+    y = (df['4. close'].shift(-1) > df['4. close']).astype(int)
+    return X, y, df, features
+
 # Train and evaluate the model for a given pair
 def train_and_evaluate(pair):
     print(f"Training model for {pair}...")
-    # Use different file naming for XAUUSD (no 'X') vs. currency pairs (with 'X')
     file_suffix = '' if pair == 'XAUUSD' else 'X'
     data_file = f'historical_data/{pair}{file_suffix}_daily.csv'
     sentiment_file = f'historical_data/{pair}{file_suffix}_sentiment.txt'
@@ -68,13 +64,11 @@ def train_and_evaluate(pair):
         print(f"Error: Historical data file for {pair} not found at '{data_file}'. Skipping...")
         return
     
-    # Check data quality
     if len(df) < 100:
         print(f"Error: Insufficient data for {pair} ({len(df)} rows, need at least 100). Skipping...")
         return
     
-    # Load sentiment data with fallback for missing file
-    df['sentiment'] = 0.0  # Default value if file is missing
+    df['sentiment'] = 0.0
     if os.path.exists(sentiment_file):
         with open(sentiment_file, 'r') as f:
             df['sentiment'] = float(f.read())
@@ -86,33 +80,26 @@ def train_and_evaluate(pair):
     
     X_train, X_test, y_train, y_test = train_test_split(X, y.dropna(), test_size=0.2, random_state=42)
     
-    # Define parameter grid for GridSearchCV
     param_grid = {
         'n_estimators': [100, 200, 300],
-        'max_depth': [10, 20, None],
-        'min_samples_split': [2, 5],
-        'min_samples_leaf': [1, 2]
+        'max_depth': [3, 5, 7],
+        'learning_rate': [0.01, 0.1, 0.2]
     }
     
-    # Initialize and train model with GridSearchCV
-    model = RandomForestClassifier(random_state=42)
+    model = XGBClassifier(random_state=42)
     grid_search = GridSearchCV(model, param_grid, cv=5, scoring='accuracy', n_jobs=-1)
     grid_search.fit(X_train, y_train)
     
-    # Best model
     best_model = grid_search.best_estimator_
     print(f"Best parameters for {pair}: {grid_search.best_params_}")
     
-    # Predict and evaluate
     y_pred = best_model.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     print(f"Accuracy for {pair}: {accuracy:.2f}")
     
-    # Print feature importance
     feature_importances = pd.Series(best_model.feature_importances_, index=features)
     print(f"Feature importances for {pair}:\n{feature_importances.sort_values(ascending=False)}\n")
     
-    # Save the best model
     os.makedirs('models', exist_ok=True)
     joblib.dump(best_model, f'models/{pair}_model.pkl')
 
