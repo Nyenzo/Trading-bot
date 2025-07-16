@@ -81,4 +81,4 @@ else:
 
 # --- Footer ---
 st.markdown("---")
-st.markdown("Developed by [Your Name] | Powered by Streamlit") 
+st.markdown("Developed by Peter Nyenzo | Powered by Streamlit") 
