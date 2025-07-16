@@ -1,6 +1,5 @@
 .env
 .vscode
 catboost_info/
-historical_data/
 venv/
 models/

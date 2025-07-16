@@ -13,6 +13,15 @@ data_folder = "historical_data"
 asset_files = glob.glob(os.path.join(data_folder, "*_hourly.csv"))
 assets = [os.path.basename(f).replace("_hourly.csv", "") for f in asset_files]
 
+if not assets:
+    st.sidebar.warning("No data files found in 'historical_data'. Upload your data to this folder.")
+    st.error("No data found for None.")
+    st.markdown("---")
+    st.markdown("Developed by Peter Nyenzo | Powered by Streamlit")
+    # --- Deployment Note ---
+    st.sidebar.info("For Streamlit Cloud deployment, ensure the 'historical_data' folder and CSV files are included in your repo.")
+    st.stop()
+
 selected_asset = st.sidebar.selectbox("Asset", assets)
 
 # --- Load Data ---
@@ -37,11 +46,18 @@ if os.path.exists(file_path):
         df = df.sort_values(by=date_col)
     
     # --- Price Column Detection ---
+    preferred_price_cols = ["4. close", "close", "price", "close_price"]
     price_col = None
-    for col in df.columns:
-        if col.lower() in ["close", "price", "close_price"]:
+    for col in preferred_price_cols:
+        if col in df.columns:
             price_col = col
             break
+    if not price_col:
+        # fallback: try to find any column with 'close' in its name
+        for col in df.columns:
+            if "close" in col.lower():
+                price_col = col
+                break
     if not price_col:
         price_col = df.columns[-1]  # fallback to last column
     
@@ -81,4 +97,8 @@ else:
 
 # --- Footer ---
 st.markdown("---")
-st.markdown("Developed by Peter Nyenzo | Powered by Streamlit") 
+st.markdown("Developed by Peter Nyenzo | Powered by Streamlit")
+
+# --- Deployment Note ---
+# For Streamlit Cloud deployment, make sure the 'historical_data' folder and all required CSV files are included in your GitHub repository.
+# Streamlit Cloud will only have access to files that are tracked in the repo at deploy time. 
