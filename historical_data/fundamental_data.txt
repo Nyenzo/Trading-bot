@@ -1,1 +1,1 @@
-{'unemployment_rate': 4.2, 'nonfarm_payrolls': 159561.0, '10-year_treasury_rate': 4.4}
+{'unemployment_rate': 4.1, 'nonfarm_payrolls': 159724.0, '10-year_treasury_rate': 4.51}
