@@ -203,7 +203,3 @@ else:
 # --- Footer ---
 st.markdown("---")
 st.markdown("Developed by Peter Nyenzo | Powered by Streamlit")
-
-# --- Deployment Note ---
-# For Streamlit Cloud deployment, make sure the 'historical_data' folder and all required CSV files are included in your GitHub repository.
-# Streamlit Cloud will only have access to files that are tracked in the repo at deploy time. 
