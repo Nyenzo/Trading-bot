@@ -96,7 +96,7 @@ exe = EXE(
 """
 
 # Write the spec file
-with open('trading_bot.spec', 'w') as f:
+with open("trading_bot.spec", "w") as f:
     f.write(spec_content)
 
 print("✅ Created PyInstaller spec file: trading_bot.spec")

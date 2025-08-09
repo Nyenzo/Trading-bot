@@ -14,6 +14,7 @@ from datetime import datetime
 VERSION = "1.0.0"
 RELEASE_NAME = "AI Trading Bot v1.0.0 - Hybrid ML-DRL System"
 
+
 def create_version_file():
     """Create version information file"""
     version_info = {
@@ -27,21 +28,22 @@ def create_version_file():
             "40% DRL win rate",
             "Real-time market analysis",
             "Risk management system",
-            "Automated trading workflows"
+            "Automated trading workflows",
         ],
         "performance": {
             "ml_accuracy": "53-58%",
             "drl_win_rate": "40%",
             "supported_pairs": 4,
             "episode_length": 500,
-            "training_timesteps": 50000
-        }
+            "training_timesteps": 50000,
+        },
     }
-    
-    with open('version.json', 'w') as f:
+
+    with open("version.json", "w") as f:
         json.dump(version_info, f, indent=2)
-    
+
     print(f"✅ Created version.json for v{VERSION}")
+
 
 def create_release_notes():
     """Create release notes"""
@@ -183,54 +185,60 @@ Special thanks to:
 **Full Changelog**: [v{VERSION}](https://github.com/Nyenzo/Trading-bot/compare/v0.9.0...v{VERSION})
 """
 
-    with open('RELEASE_NOTES.md', 'w') as f:
+    with open("RELEASE_NOTES.md", "w") as f:
         f.write(release_notes)
-    
+
     print(f"✅ Created RELEASE_NOTES.md for v{VERSION}")
+
 
 def check_build_artifacts():
     """Check if all required build artifacts exist"""
     required_files = [
-        'dist/TradingBot.exe',
-        'icon.ico',
-        'trading_bot_logo.png',
-        'github_banner.png',
-        'requirements.txt',
-        'trading_bot.spec'
+        "dist/TradingBot.exe",
+        "icon.ico",
+        "trading_bot_logo.png",
+        "github_banner.png",
+        "requirements.txt",
+        "trading_bot.spec",
     ]
-    
+
     missing_files = []
     for file in required_files:
         if not os.path.exists(file):
             missing_files.append(file)
-    
+
     if missing_files:
         print(f"❌ Missing required files: {missing_files}")
         return False
-    
+
     print("✅ All build artifacts present")
     return True
+
 
 def create_git_tag():
     """Create git tag for release"""
     try:
         # Check if tag already exists
-        result = subprocess.run(['git', 'tag', '-l', f'v{VERSION}'], 
-                              capture_output=True, text=True)
-        
-        if f'v{VERSION}' in result.stdout:
+        result = subprocess.run(
+            ["git", "tag", "-l", f"v{VERSION}"], capture_output=True, text=True
+        )
+
+        if f"v{VERSION}" in result.stdout:
             print(f"⚠️ Tag v{VERSION} already exists")
             return
-        
+
         # Create annotated tag
-        subprocess.run(['git', 'tag', '-a', f'v{VERSION}', 
-                       '-m', f'Release {RELEASE_NAME}'], check=True)
-        
+        subprocess.run(
+            ["git", "tag", "-a", f"v{VERSION}", "-m", f"Release {RELEASE_NAME}"],
+            check=True,
+        )
+
         print(f"✅ Created git tag v{VERSION}")
         print(f"💡 Push with: git push origin v{VERSION}")
-        
+
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to create git tag: {e}")
+
 
 def generate_deployment_summary():
     """Generate deployment summary"""
@@ -272,35 +280,37 @@ def generate_deployment_summary():
 
 Ready for deployment! 🎉
 """
-    
+
     print(summary)
-    
-    with open('DEPLOYMENT_SUMMARY.txt', 'w') as f:
+
+    with open("DEPLOYMENT_SUMMARY.txt", "w") as f:
         f.write(summary)
+
 
 def main():
     """Main release preparation function"""
     print(f"🚀 Preparing Trading Bot v{VERSION} for release...\n")
-    
+
     # Create version and release files
     create_version_file()
     create_release_notes()
-    
+
     # Check build artifacts
     if not check_build_artifacts():
         print("❌ Build artifacts missing. Run build process first.")
         sys.exit(1)
-    
+
     # Create git tag
     create_git_tag()
-    
+
     # Generate deployment summary
     generate_deployment_summary()
-    
+
     print(f"\n✅ Release v{VERSION} preparation complete!")
     print(f"📁 Files created: version.json, RELEASE_NOTES.md, DEPLOYMENT_SUMMARY.txt")
     print(f"🏷️ Git tag: v{VERSION}")
     print(f"\n💡 Next: Test the executable and push to GitHub!")
+
 
 if __name__ == "__main__":
     main()
