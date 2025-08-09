@@ -101,7 +101,7 @@ jobs:
     - name: 📊 Generate Performance Report
       run: |
         echo "📈 Generating performance summary..."
-        python -c "
+        cat > generate_report.py << 'EOF'
         import datetime
         import os
         
@@ -110,22 +110,29 @@ jobs:
         mode = '${{ github.event.inputs.mode }}' or 'signals_only'
         pairs = '${{ github.event.inputs.pairs }}' or 'XAUUSD,GBPUSD,USDJPY,AUDUSD'
         
-        with open(f'performance_report_{datetime.datetime.now().strftime(\"%Y%m%d_%H%M\")}.txt', 'w') as f:
-            f.write(f'Trading Bot Performance Report\\n')
-            f.write(f'Generated: {timestamp}\\n')
-            f.write(f'Mode: {mode}\\n')
-            f.write(f'Pairs: {pairs}\\n')
-            f.write(f'Status: Pipeline completed successfully\\n')
+        filename = f'performance_report_{datetime.datetime.now().strftime("%Y%m%d_%H%M")}.txt'
+        with open(filename, 'w') as f:
+            f.write('Trading Bot Performance Report\n')
+            f.write(f'Generated: {timestamp}\n')
+            f.write(f'Mode: {mode}\n')
+            f.write(f'Pairs: {pairs}\n')
+            f.write('Status: Pipeline completed successfully\n')
             
             # Check if model files exist
             if os.path.exists('models/'):
                 models = [f for f in os.listdir('models/') if f.endswith('.pkl')]
-                f.write(f'Models generated: {len(models)}\\n')
+                f.write(f'Models generated: {len(models)}\n')
                 for model in models:
-                    f.write(f'  - {model}\\n')
-        
-        echo '✅ Performance report generated'
-        "
+                    f.write(f'  - {model}\n')
+            
+            # Check if data files exist
+            if os.path.exists('historical_data/'):
+                data_files = [f for f in os.listdir('historical_data/') if f.endswith('.csv')]
+                f.write(f'Data files: {len(data_files)}\n')
+                
+        print(f'✅ Performance report generated: {filename}')
+        EOF
+        python generate_report.py
         
     - name: 📤 Upload Results
       uses: actions/upload-artifact@v4
