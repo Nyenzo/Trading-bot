@@ -14,7 +14,7 @@ pairs = ['GC=F', 'GBPUSD=X', 'USDJPY=X', 'AUDUSD=X']
 output_names = ['XAUUSD', 'GBPUSD', 'USDJPY', 'AUDUSD']
 
 # Only last 2 years for yfinance intraday
-end_date = datetime.utcnow()
+end_date = datetime.now()
 start_date = end_date - timedelta(days=729)
 interval = '1h'
 

@@ -1,5 +1,119 @@
+# Environment and secrets
 .env
-.vscode
-catboost_info/
+.env.local
+.env.*.local
+*.key
+
+# IDE and editors
+.vscode/
+.idea/
+.devcontainer/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
 venv/
-models/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# PyInstaller builds
+*.manifest
+*.spec
+build/
+dist/
+*.exe
+
+# Machine Learning models and training artifacts (keep small sample models)
+models/*.pkl
+!models/sample_*.pkl
+!models/*_demo.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+*.onnx
+
+# Training logs and outputs
+catboost_info/
+improved_hybrid_tensorboard/
+tensorboard_logs/
+logs/
+performance_logs/*.json
+!performance_logs/sample_*.json
+*.log
+
+# Data files (keep small sample datasets for dashboard)
+data/
+!historical_data/*.csv
+!historical_data/sample_*.csv
+!historical_data/*_demo.csv
+*.csv.gz
+*.json.gz
+*.parquet
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Documentation artifacts
+*.pdf
+*.docx
+
+# Markdown files (except README and release notes)
+*.md
+!README.md
+!RELEASE_NOTES.md
+
+# Demo/test files to exclude
+demo_drl_env.py
+detailed_drl_demo.py
+test_*.py
+*_test.py
+
+# Version and deployment artifacts
+version.json
+DEPLOYMENT_CHECKLIST.md
+
+# Docker volumes
+docker-data/
+.docker/

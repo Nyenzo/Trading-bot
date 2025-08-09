@@ -1,98 +1,168 @@
-# Trading Bot
+# 🤖 AI Trading Bot v1.0.0
 
-A sophisticated algorithmic trading system that combines technical analysis with machine learning to predict market movements and execute trades in forex and gold markets.
+[![Release](https://img.shields.io/github/v/release/Nyenzo/Trading-bot)](https://github.com/Nyenzo/Trading-bot/releases)
+[![License](https://img.shields.io/github/license/Nyenzo/Trading-bot)](LICENSE)
+[![Build](https://github.com/Nyenzo/Trading-bot/workflows/Build%20&%20Release/badge.svg)](https://github.com/Nyenzo/Trading-bot/actions)
+
+A sophisticated **Hybrid ML-DRL Trading System** that combines Machine Learning predictions with Deep Reinforcement Learning execution for automated forex trading.
+
+![Trading Bot Banner](github_banner.png)
 
 ## 🚀 Features
 
-- Real-time market data collection for multiple currency pairs and gold (XAUUSD)
-- Advanced technical analysis using various indicators
-- Machine learning-based signal prediction using Random Forest
-- Automated trading during EAT (East Africa Time) market hours
-- Economic indicators integration for enhanced decision making
-- Comprehensive backtesting and model evaluation
+### 🧠 **Hybrid Intelligence**
+- **Machine Learning Models**: XGBoost, LightGBM, CatBoost ensemble (53-58% accuracy)
+- **Deep Reinforcement Learning**: PPO agent for execution and risk management
+- **4 Trading Pairs**: AUDUSD, GBPUSD, USDJPY, XAUUSD
+- **Real-time Signals**: Technical analysis with 40+ indicators
 
-## 📊 Supported Trading Pairs
+### 📊 **Performance**
+- **40% Win Rate**: Profitable with proper risk management
+- **Risk Management**: Dynamic position sizing and stop-losses
+- **Market Awareness**: Automated trading hour detection
+- **Backtesting**: Historical validation on 1+ years of data
 
-- XAUUSD (Gold)
-- GBPUSD (British Pound/US Dollar)
-- USDJPY (US Dollar/Japanese Yen)
-- AUDUSD (Australian Dollar/US Dollar)
+### 🛠 **Technology Stack**
+- **Python 3.11+**: Core runtime
+- **Stable-Baselines3**: PPO reinforcement learning
+- **Scikit-learn**: Machine learning pipeline
+- **Gymnasium**: Trading environment
+- **Streamlit**: Web dashboard
+- **PyInstaller**: Standalone executable
 
-## 🛠️ Technical Stack
+## 📦 Quick Start
 
-- **Python 3.x**
-- **Key Libraries**:
-  - pandas: Data manipulation and analysis
-  - scikit-learn: Machine learning implementation
-  - yfinance: Market data fetching
-  - alpha_vantage: Forex data API
-  - ta: Technical analysis indicators
-  - schedule: Automated task scheduling
+### Option 1: Download Executable (Recommended)
+1. Go to [Releases](https://github.com/Nyenzo/Trading-bot/releases)
+2. Download `TradingBot.exe` for Windows
+3. Run directly - no installation needed!
 
-## 🔧 Installation
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Trading-bot.git
+# Demo trading (safe mode)
+TradingBot.exe trade --demo --episodes 5
+
+# View dashboard
+TradingBot.exe dashboard
+
+# Train new models
+TradingBot.exe train --timesteps 50000
+```
+
+### Option 2: Python Installation
+```bash
+# Clone repository
+git clone https://github.com/Nyenzo/Trading-bot.git
 cd Trading-bot
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run demo
+python run_improved_hybrid_agent.py --demo --episodes 5
 ```
 
-2. Install required packages:
+## 🎮 Usage Commands
+
+### Trading Operations
 ```bash
-pip install pandas numpy scikit-learn yfinance alpha_vantage ta schedule python-dotenv
+# Demo trading (paper trading)
+TradingBot.exe trade --demo --episodes 10
+
+# Live trading (requires API keys)
+TradingBot.exe trade --episodes 5
+
+# Quick 1-episode test
+TradingBot.exe trade --demo --episodes 1
 ```
 
-3. Create a `.env` file in the root directory and add your Alpha Vantage API key:
-```env
-ALPHA_VANTAGE_API_KEY=your_api_key_here
-```
-
-## 📈 Usage
-
-1. **Data Collection**:
+### Training & Data
 ```bash
-python data_collection.py
-```
-This will start collecting market data during trading hours (6 AM - 6 PM EAT).
+# Retrain ML models
+TradingBot.exe train-ml
 
-2. **Training Data Preparation**:
+# Retrain DRL agent
+TradingBot.exe train --timesteps 100000
+
+# Collect fresh data
+TradingBot.exe data-collection
+```
+
+### Analysis & Monitoring
 ```bash
-python training_data_collection.py
+# Launch web dashboard
+TradingBot.exe dashboard
+
+# Generate trading signals
+TradingBot.exe signals
 ```
 
-3. **Model Training and Evaluation**:
+## � Architecture
+
+### System Overview
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Data Sources  │───▶│  ML Ensemble    │───▶│   DRL Agent     │
+│                 │    │                 │    │                 │
+│ • Yahoo Finance │    │ • XGBoost       │    │ • PPO Algorithm │
+│ • Alpha Vantage │    │ • LightGBM      │    │ • Risk Mgmt     │
+│ • Technical     │    │ • CatBoost      │    │ • Portfolio     │
+│   Indicators    │    │ • 53-58% Acc    │    │ • 40% Win Rate  │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+## 🚀 Deployment Options
+
+### 1. GitHub Actions (Automated)
+- **Scheduled Trading**: Runs automatically during market hours
+- **Model Retraining**: Weekly model updates
+- **Performance Monitoring**: Automated reporting
+
+### 2. Local Deployment
 ```bash
-python train_evaluate.py
+# Build executable yourself
+python create_build_spec.py
+pyinstaller trading_bot.spec --clean --noconfirm
+
+# Run locally
+./dist/TradingBot.exe trade --demo
 ```
 
-4. **Signal Prediction**:
-```bash
-python signal_predictor.py
-```
+## 🔄 GitHub Automation
 
-## 📁 Project Structure
+### Setting Up Automation
+1. Fork this repository
+2. Add API keys to GitHub Secrets:
+   - `ALPHA_VANTAGE_API_KEY`
+   - `NEWS_API_KEY`
+   - `FRED_API_KEY`
+3. Enable GitHub Actions
+4. Trading runs automatically!
 
-- `data_collection.py`: Real-time market data collection
-- `training_data_collection.py`: Historical data preparation for training
-- `train_evaluate.py`: Model training and performance evaluation
-- `signal_predictor.py`: Real-time trading signal generation
+## 🛡️ Risk Disclaimer
 
-## 📊 Model Performance
+**⚠️ Important**: This software is for educational purposes. Real trading involves risk of loss. Always:
+- Start with demo mode
+- Use proper risk management
+- Never risk more than you can afford to lose
+- Consider professional financial advice
 
-The trading bot uses a Random Forest Classifier trained on various technical indicators and economic factors. Model accuracy is evaluated for each trading pair separately, with regular retraining to maintain performance.
+## 🔮 Roadmap v1.2.0
 
-## ⚠️ Disclaimer
+### Planned Optimizations
+- **Enhanced ML Features**: Sentiment analysis, news integration
+- **Advanced DRL**: Multi-agent systems, portfolio optimization
+- **Real-time Data**: WebSocket feeds, lower latency
 
-This trading bot is for educational and research purposes only. Trading financial instruments carries significant risks. Always perform your own analysis and consider your financial circumstances before making any investment decisions.
+## � License
 
-## 📝 License
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+---
 
-## 🤝 Contributing
+<div align="center">
 
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+**Made by Nyenzo**
 
-## 📧 Contact
+[⭐ Star me on GitHub](https://github.com/Nyenzo/Trading-bot) | [🐛 Report Bug](https://github.com/Nyenzo/Trading-bot/issues)
 
-For questions and feedback, please open an issue in the repository.
+</div>

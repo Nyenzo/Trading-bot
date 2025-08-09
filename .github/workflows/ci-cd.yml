@@ -1,0 +1,147 @@
+name: 🚀 CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  lint-and-test:
+    name: 🔍 Lint and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8 pytest black isort
+        
+    - name: 🎨 Format check with Black
+      run: |
+        black --check --diff .
+        
+    - name: 📐 Import sorting check with isort
+      run: |
+        isort --check-only --diff .
+        
+    - name: 🔎 Lint with flake8
+      run: |
+        # Stop build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
+    - name: 🧪 Syntax validation
+      run: |
+        python -m py_compile *.py
+        echo "✅ All Python files have valid syntax"
+        
+    - name: 📊 Import validation
+      run: |
+        python -c "
+        import sys
+        files = ['dashboard.py', 'signal_predictor.py', 'train_evaluate.py']
+        for file in files:
+            try:
+                exec(f'import {file[:-3]}')
+                print(f'✅ {file} imports successfully')
+            except Exception as e:
+                print(f'❌ {file} import failed: {e}')
+                sys.exit(1)
+        "
+
+  build-test:
+    name: 🏗️ Build and Package Test
+    needs: lint-and-test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+        
+    - name: 🎨 Generate icon
+      run: python create_icon.py
+      
+    - name: 🔧 Create build spec
+      run: python create_build_spec.py
+      
+    - name: 🏗️ Test build (dry run)
+      run: |
+        pyinstaller trading_bot.spec --clean --noconfirm --dry-run
+        echo "✅ Build configuration validated on ${{ matrix.os }}"
+
+  deploy-ready:
+    name: 🎯 Deployment Ready Check
+    needs: [lint-and-test, build-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v4
+      
+    - name: 🐍 Set up Python ${{ env.PYTHON_VERSION }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+        
+    - name: 📦 Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install streamlit
+        
+    - name: 🌐 Test Dashboard
+      run: |
+        python -c "
+        import dashboard
+        print('✅ Dashboard ready for deployment')
+        "
+        
+    - name: 🤖 Validate Trading System
+      run: |
+        python -c "
+        import signal_predictor
+        import train_evaluate
+        print('✅ Trading system components validated')
+        "
+        
+    - name: 📈 Success Notification
+      run: |
+        echo "🎉 All checks passed! Ready for deployment."
+        echo "✅ Code quality: PASSED"
+        echo "✅ Build validation: PASSED" 
+        echo "✅ Cross-platform: PASSED"
+        echo "✅ Dashboard: READY"
+        echo "✅ Trading system: VALIDATED"

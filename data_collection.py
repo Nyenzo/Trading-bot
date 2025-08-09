@@ -10,6 +10,7 @@ import time
 import warnings
 import dotenv
 import requests
+import pytz
 
 warnings.filterwarnings('ignore')
 
@@ -38,11 +39,11 @@ def fetch_price_data(pair, interval='90min', is_xauusd=False):
         if is_xauusd:
             ticker = yf.Ticker(xauusd_ticker)
             data = ticker.history(period='1d', interval='5m')
+            data = data.rename(columns={
+                'Open': '1. open', 'High': '2. high', 'Low': '3. low', 'Close': '4. close', 'Volume': '5. volume'
+            })
         else:
             data, _ = ts.get_intraday(symbol=f"{pair}=X", interval=interval, outputsize='compact')
-        data = data.rename(columns={
-            '1. open': '1. open', '2. high': '2. high', '3. low': '3. low', '4. close': '4. close', '5. volume': '5. volume'
-        })
         data.index = data.index.tz_localize(None)
         return data
     except Exception as e:
@@ -97,7 +98,7 @@ def job():
             if price_data is not None:
                 if vix_data is not None:
                     price_data = price_data.join(vix_data, how='left')
-                    price_data['vix'] = price_data['vix'].fillna(method='ffill')
+                    price_data['vix'] = price_data['vix'].ffill()
                 price_data.to_csv(f'data/{pair}_price_90min.csv')
                 sentiment = fetch_sentiment_data(pair)
                 with open(f'data/{pair}_sentiment_90min.txt', 'w') as f:
@@ -110,7 +111,7 @@ def job():
         if xauusd_data is not None:
             if vix_data is not None:
                 xauusd_data = xauusd_data.join(vix_data, how='left')
-                xauusd_data['vix'] = xauusd_data['vix'].fillna(method='ffill')
+                xauusd_data['vix'] = xauusd_data['vix'].ffill()
             xauusd_data.to_csv('data/XAUUSD_price_5min.csv')
             sentiment = fetch_sentiment_data('gold')
             with open('data/XAUUSD_sentiment_5min.txt', 'w') as f:
