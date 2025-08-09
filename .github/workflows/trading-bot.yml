@@ -107,12 +107,14 @@ jobs:
         
         # Create simple performance report
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')
+        mode = '${{ github.event.inputs.mode }}' or 'signals_only'
+        pairs = '${{ github.event.inputs.pairs }}' or 'XAUUSD,GBPUSD,USDJPY,AUDUSD'
         
         with open(f'performance_report_{datetime.datetime.now().strftime(\"%Y%m%d_%H%M\")}.txt', 'w') as f:
             f.write(f'Trading Bot Performance Report\\n')
             f.write(f'Generated: {timestamp}\\n')
-            f.write(f'Mode: ${{ github.event.inputs.mode || \"signals_only\" }}\\n')
-            f.write(f'Pairs: ${{ github.event.inputs.pairs || \"XAUUSD,GBPUSD,USDJPY,AUDUSD\" }}\\n')
+            f.write(f'Mode: {mode}\\n')
+            f.write(f'Pairs: {pairs}\\n')
             f.write(f'Status: Pipeline completed successfully\\n')
             
             # Check if model files exist
