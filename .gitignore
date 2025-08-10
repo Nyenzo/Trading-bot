@@ -103,6 +103,7 @@ Thumbs.db
 *.md
 !README.md
 !RELEASE_NOTES.md
+!EXECUTION_GUIDE.md
 
 # Demo/test files to exclude
 demo_drl_env.py
