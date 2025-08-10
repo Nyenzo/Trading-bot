@@ -29,7 +29,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install flake8 pytest black isort
+        pip install flake8 pytest black isort pyinstaller
         
     - name: 🎨 Format check with Black
       run: |
@@ -97,7 +97,7 @@ jobs:
       
     - name: 🏗️ Test build (dry run)
       run: |
-        pyinstaller trading_bot.spec --clean --noconfirm --dry-run
+        pyinstaller trading_bot.spec --clean --noconfirm --log-level INFO --distpath test_dist --workpath test_work
         echo "✅ Build configuration validated on ${{ matrix.os }}"
 
   deploy-ready:

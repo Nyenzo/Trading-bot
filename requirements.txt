@@ -10,4 +10,12 @@ requests>=2.31.0
 streamlit
 plotly
 schedule>=1.2.0
-pytz 
+pytz
+scikit-learn
+xgboost
+lightgbm
+catboost
+joblib
+ta
+alpha-vantage
+fredapi 

@@ -61,6 +61,7 @@ jobs:
         python run_improved_hybrid_agent.py $demo_flag --episodes $episodes > trading_results.txt 2>&1
 
     - name: 📊 Extract performance metrics
+      id: extract
       run: |
         python -c "
         import re
@@ -92,18 +93,20 @@ jobs:
     - name: 📈 Update performance tracking
       run: |
         mkdir -p performance_logs
-        echo '{
-          \"timestamp\": \"$(date -Iseconds)\",
-          \"avg_reward\": \"${{ steps.extract.outputs.avg_reward || 0 }}\",
-          \"win_rate\": \"${{ steps.extract.outputs.win_rate || 0 }}\",
-          \"best_episode\": \"${{ steps.extract.outputs.best_episode || 0 }}\",
-          \"worst_episode\": \"${{ steps.extract.outputs.worst_episode || 0 }}\",
-          \"demo_mode\": \"${{ github.event.inputs.demo_mode || 'true' }}\",
-          \"episodes\": \"${{ github.event.inputs.episodes || '10' }}\"
-        }' >> performance_logs/$(date +%Y%m%d_%H%M%S).json
+        cat > performance_logs/$(date +%Y%m%d_%H%M%S).json << EOF
+        {
+          "timestamp": "$(date -Iseconds)",
+          "avg_reward": "${{ steps.extract.outputs.avg_reward || 0 }}",
+          "win_rate": "${{ steps.extract.outputs.win_rate || 0 }}",
+          "best_episode": "${{ steps.extract.outputs.best_episode || 0 }}",
+          "worst_episode": "${{ steps.extract.outputs.worst_episode || 0 }}",
+          "demo_mode": "${{ github.event.inputs.demo_mode || 'true' }}",
+          "episodes": "${{ github.event.inputs.episodes || '10' }}"
+        }
+        EOF
 
     - name: 📤 Upload trading results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: trading-results-${{ github.run_number }}
         path: |
@@ -162,7 +165,7 @@ jobs:
       continue-on-error: true
 
     - name: 📤 Upload retrained models
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: retrained-models-${{ github.run_number }}
         path: models/
@@ -201,7 +204,7 @@ jobs:
         cat market_signals.txt >> market_report.md 2>/dev/null || echo "No signals generated" >> market_report.md
 
     - name: 📤 Upload market analysis
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: market-analysis-${{ github.run_number }}
         path: |
