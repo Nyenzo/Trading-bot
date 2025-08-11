@@ -3,9 +3,9 @@ Trading Bot Main Entry Point
 Unified entry point for the packaged executable
 """
 
-import sys
-import os
 import argparse
+import os
+import sys
 from pathlib import Path
 
 
@@ -27,7 +27,7 @@ def main():
         epilog="""
 Examples:
   trading_bot.exe trade --demo          # Demo trading
-  trading_bot.exe trade --episodes 10   # Live trading  
+  trading_bot.exe trade --episodes 10   # Live trading
   trading_bot.exe train                 # Train models
   trading_bot.exe dashboard             # Launch dashboard
   trading_bot.exe collect-data          # Collect market data

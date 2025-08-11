@@ -2,12 +2,14 @@
 Training script for the improved hybrid environment with better episode management
 """
 
+import os
+
 import numpy as np
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import EvalCallback
+from stable_baselines3.common.vec_env import DummyVecEnv
+
 from improved_hybrid_env import ImprovedHybridTradingEnv
-import os
 
 
 def train_improved_hybrid_agent():

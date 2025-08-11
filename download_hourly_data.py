@@ -1,9 +1,10 @@
 import os
-import yfinance as yf
-import pandas as pd
 from datetime import datetime, timedelta
-from dotenv import load_dotenv
+
+import pandas as pd
 import requests
+import yfinance as yf
+from dotenv import load_dotenv
 
 # Load Alpha Vantage API key
 load_dotenv()

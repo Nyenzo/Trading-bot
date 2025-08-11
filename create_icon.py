@@ -3,12 +3,13 @@ Trading Bot Icon Creator
 Creates a professional icon for the trading bot executable
 """
 
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.patches import FancyBboxPatch, Circle
-import numpy as np
-from PIL import Image, ImageDraw, ImageFont
 import io
+
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.patches import Circle, FancyBboxPatch
+from PIL import Image, ImageDraw, ImageFont
 
 
 def create_trading_bot_icon(size=256):

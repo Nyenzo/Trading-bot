@@ -4,10 +4,10 @@
 Tracks and validates the deployment status of the AI Trading Bot
 """
 
-import os
-import sys
 import json
+import os
 import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 

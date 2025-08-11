@@ -28,7 +28,7 @@ hiddenimports = [
     'sklearn.metrics',
     'sklearn.preprocessing',
     'xgboost',
-    'lightgbm', 
+    'lightgbm',
     'catboost',
     'joblib',
     'ta',
