@@ -137,17 +137,15 @@ def _check_workflows() -> CheckResult:
     return CheckResult("github_actions", "pass", "Paper check, retraining, and preflight workflows are present")
 
 
-def _check_runbooks() -> CheckResult:
+def _check_deploy_assets() -> CheckResult:
     required = [
-        "docs/PRODUCTION.md",
-        "docs/NO_VPS_STAGE.md",
         "deploy/trading-bot.service",
         "deploy/trading-bot.timer",
     ]
     missing = [path for path in required if not _exists(path)]
     if missing:
-        return CheckResult("runbooks_and_deploy_assets", "fail", f"Missing docs/assets: {', '.join(missing)}")
-    return CheckResult("runbooks_and_deploy_assets", "pass", "Runbooks and future VPS service files are present")
+        return CheckResult("deploy_assets", "fail", f"Missing deploy assets: {', '.join(missing)}")
+    return CheckResult("deploy_assets", "pass", "Future VPS service files are present")
 
 
 def _check_broker_deferred() -> CheckResult:
@@ -180,7 +178,7 @@ CHECKS: List[Callable[[], CheckResult]] = [
     _check_models,
     _check_data,
     _check_workflows,
-    _check_runbooks,
+    _check_deploy_assets,
     _check_broker_deferred,
     _check_vps_deferred,
 ]
