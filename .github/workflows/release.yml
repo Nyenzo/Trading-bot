@@ -1,4 +1,8 @@
-name: 🚀 Release Build
+name: Release Build
+
+env:
+  PYTHONUTF8: '1'
+  PYTHONIOENCODING: utf-8
 
 on:
   push:
@@ -13,29 +17,29 @@ on:
 
 jobs:
   test:
-    name: 🧪 Run Tests
+    name: Run Tests
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 🐍 Setup Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: ✅ Validate Code
+      - name: Validate Code
         run: |
           python -m py_compile *.py
-          echo "✅ All Python files compiled successfully"
+          echo "All Python files compiled successfully"
 
   build-executables:
-    name: 🏗️ Build Executables
+    name: Build Executables
     needs: test
     strategy:
       fail-fast: false
@@ -59,37 +63,39 @@ jobs:
     runs-on: ${{ matrix.os }}
     
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 🐍 Setup Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: 📦 Install Dependencies
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pyinstaller pillow
+          pip install pyinstaller
 
-      - name: 🎨 Generate Icon
-        run: python create_icon.py
+      - name: Validate committed release assets
+        shell: bash
+        run: |
+          test -f icon.ico
+          test -f Trading-Bot-Logo.png
 
-      - name: 🏗️ Create Build Spec
+      - name: Create Build Spec
         run: python create_build_spec.py
 
-      - name: 🧱 Build Executable
+      - name: Build Executable
         run: pyinstaller trading_bot.spec --clean --noconfirm
 
-      - name: 📁 Create Release Package
+      - name: Create Release Package
         shell: bash
         run: |
           mkdir release-${{ matrix.platform }}
           cp dist/${{ matrix.executable }} release-${{ matrix.platform }}/
-          if [ -f "trading_bot_logo.png" ]; then
-            cp trading_bot_logo.png release-${{ matrix.platform }}/
-          fi
+          cp Trading-Bot-Logo.png release-${{ matrix.platform }}/
+          cp icon.ico release-${{ matrix.platform }}/
           if [ -d "models" ]; then
             cp -r models release-${{ matrix.platform }}/
           fi
@@ -99,11 +105,11 @@ jobs:
           cp README.md release-${{ matrix.platform }}/ || echo "README.md not found"
           cp LICENSE release-${{ matrix.platform }}/ || echo "LICENSE not found"
 
-      - name: 📦 Create Archive
+      - name: Create Archive
         shell: bash
         run: ${{ matrix.archive_cmd }}
 
-      - name: 📤 Upload Artifacts
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: trading-bot-${{ matrix.platform }}
@@ -111,19 +117,19 @@ jobs:
           retention-days: 30
 
   create-release:
-    name: 🎉 Create GitHub Release
+    name: Create GitHub Release
     needs: build-executables
     runs-on: ubuntu-latest
     steps:
-      - name: 📥 Checkout Code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: 📥 Download All Artifacts
+      - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
 
-      - name: 🏷️ Get Version
+      - name: Get Version
         id: version
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
@@ -132,35 +138,35 @@ jobs:
             echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
           fi
 
-      - name: 📝 Generate Release Notes
+      - name: Generate Release Notes
         id: release_notes
         run: |
           cat > release_notes.md << 'EOF'
-          # 🤖 AI Trading Bot v1.0.0 - Production Release
+          # AI Trading Bot v1.0.0 - Production Release
 
-          ## 🚀 What's New
+          ## What's New
 
-          ### ✨ Core Features
+          ### Core Features
           - **Hybrid AI Architecture**: XGBoost + LightGBM + CatBoost ensemble achieving 58% prediction accuracy
           - **Deep Reinforcement Learning**: PPO agent with 40% win rate and optimized 500-step episodes
           - **Multi-Asset Support**: AUDUSD, GBPUSD, USDJPY, XAUUSD trading pairs
           - **Real-time Dashboard**: Professional Streamlit interface with portfolio monitoring
           - **Production Ready**: Cross-platform executables with comprehensive CI/CD
 
-          ### 📊 Performance Metrics
+          ### Performance Metrics
           - **ML Model Accuracy**: 53-58% across different assets
           - **DRL Win Rate**: 40% with optimized episode length
           - **Risk Management**: Advanced portfolio optimization and position sizing
           - **Data Processing**: Real-time market data integration with technical indicators
 
-          ### 🛠️ Technical Highlights
+          ### Technical Highlights
           - Professional code documentation and clean architecture
           - Comprehensive error handling and validation
           - Cross-platform deployment (Windows, Linux, macOS)
           - GitHub Actions CI/CD pipeline
           - Educational compliance and risk disclaimers
 
-          ## 📦 Downloads
+          ## Downloads
 
           Choose the appropriate version for your operating system:
 
@@ -168,18 +174,18 @@ jobs:
           - **Linux**: `trading-bot-linux.tar.gz`
           - **macOS**: `trading-bot-macos.tar.gz`
 
-          ## 🚀 Quick Start
+          ## Quick Start
 
           1. Download the appropriate package for your OS
           2. Extract the archive
           3. Run the executable: `./TradingBot` (or `TradingBot.exe` on Windows)
           4. Access the dashboard at `http://localhost:8501`
 
-          ## ⚠️ Important Notice
+          ## Important Notice
 
           This software is for educational purposes only. Trading involves substantial risk of loss. Past performance does not guarantee future results.
 
-          ## 🤝 Contributing
+          ## Contributing
 
           See our [repository](https://github.com/Nyenzo/Trading-bot) for contribution guidelines and source code.
 
@@ -187,11 +193,11 @@ jobs:
           **Built with**: Python 3.11+ | Streamlit | Stable-Baselines3 | Scikit-learn | XGBoost | LightGBM | CatBoost
           EOF
 
-      - name: 🎉 Create Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.version }}
-          name: 🤖 AI Trading Bot ${{ steps.version.outputs.version }}
+          name: AI Trading Bot ${{ steps.version.outputs.version }}
           body_path: release_notes.md
           draft: false
           prerelease: false
