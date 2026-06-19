@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Trading Bot Once Per Hour
+
+[Timer]
+OnCalendar=Mon..Fri *:05:00
+Persistent=true
+Unit=trading-bot-once.service
+
+[Install]
+WantedBy=timers.target

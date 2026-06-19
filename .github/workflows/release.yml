@@ -1,4 +1,4 @@
-name: 🚀 Release Build & Deploy
+name: 🚀 Release Build
 
 on:
   push:
@@ -76,8 +76,11 @@ jobs:
       - name: 🎨 Generate Icon
         run: python create_icon.py
 
-      - name: 🏗️ Build Executable
+      - name: 🏗️ Create Build Spec
         run: python create_build_spec.py
+
+      - name: 🧱 Build Executable
+        run: pyinstaller trading_bot.spec --clean --noconfirm
 
       - name: 📁 Create Release Package
         shell: bash
@@ -198,41 +201,3 @@ jobs:
             artifacts/trading-bot-macos/trading-bot-macos.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  deploy-dashboard:
-    name: 🌐 Deploy Dashboard
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-      - name: 📥 Checkout Code
-        uses: actions/checkout@v4
-
-      - name: 🐍 Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: 📦 Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: 🌐 Deploy to Streamlit Cloud
-        run: |
-          echo "🚀 Dashboard ready for deployment"
-          echo "📊 Streamlit app available at: https://share.streamlit.io"
-          echo "🔗 Connect your GitHub repository to Streamlit Cloud for automatic deployment"
-
-  notify-success:
-    name: 🎊 Deployment Success
-    needs: [create-release, deploy-dashboard]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🎉 Success Notification
-        run: |
-          echo "🎊 Release ${{ needs.create-release.outputs.version || github.ref_name }} deployed successfully!"
-          echo "📦 Executables available for download"
-          echo "🌐 Dashboard ready for production use"
-          echo "🚀 Trading Bot v1.0.0 is live!"

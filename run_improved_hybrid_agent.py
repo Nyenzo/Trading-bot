@@ -3,11 +3,14 @@ Run Improved Hybrid Trading Agent
 Executes the trained hybrid ML-DRL agent for live trading
 """
 
+import os
+
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+
 import numpy as np
 import pandas as pd
 from stable_baselines3 import PPO
 from improved_hybrid_env import ImprovedHybridTradingEnv
-import os
 import time
 from datetime import datetime
 import warnings
@@ -58,7 +61,7 @@ def run_improved_hybrid_agent(demo_mode=False, episodes=10):
         return
 
     print(f"📦 Loading trained model from {model_path}...")
-    model = PPO.load(model_path)
+    model = PPO.load(model_path, device="cpu")
     print("✅ Model loaded successfully!")
 
     # Create environment

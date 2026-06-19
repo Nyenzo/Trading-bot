@@ -64,6 +64,7 @@ catboost_info/
 improved_hybrid_tensorboard/
 tensorboard_logs/
 logs/
+reports/
 performance_logs/*.json
 !performance_logs/sample_*.json
 *.log
@@ -104,6 +105,10 @@ Thumbs.db
 !README.md
 !RELEASE_NOTES.md
 !EXECUTION_GUIDE.md
+docs/
+docs/*.md
+!deploy/
+!deploy/*.md
 
 # Demo/test files to exclude
 demo_drl_env.py

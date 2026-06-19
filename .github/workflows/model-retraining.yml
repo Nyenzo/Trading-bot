@@ -1,0 +1,60 @@
+name: Model Retraining and Promotion Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      timesteps:
+        description: PPO timesteps for candidate training
+        required: false
+        default: '25000'
+      promote:
+        description: Promote if evaluation passes
+        type: boolean
+        default: false
+  schedule:
+    - cron: '0 7 * * 1'
+
+env:
+  PYTHON_VERSION: '3.11'
+  CANDIDATE_MODEL_PATH: models/candidates/improved_hybrid_trading_agent.zip
+  EVALUATION_REPORT_PATH: reports/model_evaluation.json
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Refresh historical data
+        run: python download_hourly_data.py
+      - name: Train ML models
+        run: python train_evaluate.py
+      - name: Train candidate PPO model
+        run: >-
+          python train_improved_hybrid_agent.py
+          --timesteps ${{ github.event.inputs.timesteps || '25000' }}
+          --model-output models/candidates/improved_hybrid_trading_agent
+          --best-model-dir models/candidates
+          --log-dir logs/candidate
+          --test-episodes 3
+      - name: Evaluate candidate model
+        run: python model_ops.py evaluate --model ${{ env.CANDIDATE_MODEL_PATH }} --episodes 10 --report ${{ env.EVALUATION_REPORT_PATH }}
+      - name: Promote candidate model when requested and passing
+        if: ${{ github.event.inputs.promote == 'true' }}
+        run: python model_ops.py promote --candidate ${{ env.CANDIDATE_MODEL_PATH }} --production models/improved_hybrid_trading_agent.zip --report ${{ env.EVALUATION_REPORT_PATH }}
+      - name: Upload candidate artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidate-model-${{ github.run_number }}
+          path: |
+            models/candidates/
+            reports/
+            logs/candidate/
+          retention-days: 90

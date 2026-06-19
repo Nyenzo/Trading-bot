@@ -1,6 +1,8 @@
 gymnasium>=0.29.1
 stable-baselines3>=2.2.1
-torch>=2.0.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.8.0+cpu
+tensorboard>=2.16.0
 pandas>=2.0.0
 numpy>=1.24.0
 yfinance>=0.2.36
@@ -9,6 +11,7 @@ matplotlib>=3.7.0
 requests>=2.31.0 
 streamlit
 plotly
+pyinstaller>=6.0.0
 schedule>=1.2.0
 pytz
 scikit-learn

@@ -56,7 +56,17 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=[
+        'nvidia',
+        'triton',
+        'torch.cuda',
+        'torch.distributed',
+        'torch.testing',
+        'tensorflow',
+        'jax',
+        'cupy',
+        'numba.cuda',
+    ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,
@@ -99,4 +109,4 @@ exe = EXE(
 with open("trading_bot.spec", "w") as f:
     f.write(spec_content)
 
-print("✅ Created PyInstaller spec file: trading_bot.spec")
+print("Created PyInstaller spec file: trading_bot.spec")

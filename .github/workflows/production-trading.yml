@@ -1,0 +1,43 @@
+name: Production Trading Checks
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Run mode
+        type: choice
+        default: paper_once
+        options:
+          - paper_once
+          - evaluate_current
+  schedule:
+    - cron: '5 8,13 * * 1-5'
+
+env:
+  PYTHON_VERSION: '3.11'
+  TRADING_MODE: paper
+  BROKER: paper
+  ENABLE_LIVE_TRADING: 'false'
+  MAX_TRADING_CYCLES: '1'
+
+jobs:
+  paper-cycle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run one safe paper cycle
+        run: python live_trader.py --once
+      - name: Upload trade logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: paper-cycle-${{ github.run_number }}
+          path: logs/
+          retention-days: 30

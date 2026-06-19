@@ -2,15 +2,24 @@
 Training script for the improved hybrid environment with better episode management
 """
 
+import os
+
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+
 import numpy as np
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import EvalCallback
 from improved_hybrid_env import ImprovedHybridTradingEnv
-import os
 
 
-def train_improved_hybrid_agent():
+def train_improved_hybrid_agent(
+    total_timesteps=100000,
+    model_output="models/improved_hybrid_trading_agent",
+    best_model_dir="./models/",
+    log_dir="./logs/",
+    test_episodes=5,
+):
     """Train hybrid ML-DRL agent with improved episode management"""
 
     print("🚀 Training Improved Hybrid ML-DRL Agent")
@@ -51,6 +60,7 @@ def train_improved_hybrid_agent():
         vf_coef=0.5,
         max_grad_norm=0.5,
         tensorboard_log="./improved_hybrid_tensorboard/",
+        device="cpu",
     )
 
     print("✅ PPO model created")
@@ -69,8 +79,8 @@ def train_improved_hybrid_agent():
 
     eval_callback = EvalCallback(
         eval_env,
-        best_model_save_path="./models/",
-        log_path="./logs/",
+        best_model_save_path=best_model_dir,
+        log_path=log_dir,
         eval_freq=2000,  # More frequent evaluation
         deterministic=True,
         render=False,
@@ -86,7 +96,7 @@ def train_improved_hybrid_agent():
 
     try:
         model.learn(
-            total_timesteps=100000,  # More timesteps but shorter episodes
+            total_timesteps=total_timesteps,
             callback=eval_callback,
             tb_log_name="ImprovedHybridPPO",
         )
@@ -94,8 +104,8 @@ def train_improved_hybrid_agent():
         print("✅ Training completed successfully!")
 
         # Save the final model
-        model.save("models/improved_hybrid_trading_agent")
-        print("💾 Model saved as 'improved_hybrid_trading_agent'")
+        model.save(model_output)
+        print(f"💾 Model saved as {model_output}")
 
         # Test the trained agent
         print("🧪 Testing trained agent...")
@@ -103,7 +113,7 @@ def train_improved_hybrid_agent():
         total_reward = 0
         episode_rewards = []
 
-        for episode in range(5):
+        for episode in range(test_episodes):
             episode_reward = 0
             obs = env.reset()
 
@@ -130,6 +140,15 @@ def train_improved_hybrid_agent():
 
 def main():
     """Main training function"""
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Train improved hybrid PPO agent")
+    parser.add_argument("--timesteps", type=int, default=100000)
+    parser.add_argument("--model-output", default="models/improved_hybrid_trading_agent")
+    parser.add_argument("--best-model-dir", default="./models/")
+    parser.add_argument("--log-dir", default="./logs/")
+    parser.add_argument("--test-episodes", type=int, default=5)
+    args = parser.parse_args()
     print("🤖 Improved Hybrid ML-DRL Trading System")
     print("Addressing long episode problems with:")
     print("  • Episode truncation")
@@ -143,7 +162,13 @@ def main():
     os.makedirs("logs", exist_ok=True)
 
     # Train the agent
-    model = train_improved_hybrid_agent()
+    model = train_improved_hybrid_agent(
+        total_timesteps=args.timesteps,
+        model_output=args.model_output,
+        best_model_dir=args.best_model_dir,
+        log_dir=args.log_dir,
+        test_episodes=args.test_episodes,
+    )
 
     if model:
         print("🎉 Training completed successfully!")

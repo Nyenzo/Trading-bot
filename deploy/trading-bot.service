@@ -1,0 +1,17 @@
+[Unit]
+Description=Trading Bot Paper/Live Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/trading-bot
+EnvironmentFile=/opt/trading-bot/.env
+ExecStart=/opt/trading-bot/.venv/bin/python live_trader.py
+Restart=always
+RestartSec=15
+User=tradingbot
+Group=tradingbot
+
+[Install]
+WantedBy=multi-user.target

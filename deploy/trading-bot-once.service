@@ -1,0 +1,12 @@
+[Unit]
+Description=Trading Bot One Cycle
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/trading-bot
+EnvironmentFile=/opt/trading-bot/.env
+ExecStart=/opt/trading-bot/.venv/bin/python live_trader.py --once
+User=tradingbot
+Group=tradingbot

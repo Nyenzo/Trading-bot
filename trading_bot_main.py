@@ -54,6 +54,23 @@ Examples:
         "--historical", action="store_true", help="Download historical data"
     )
 
+    live_parser = subparsers.add_parser("live", help="Run production paper/live trader")
+    live_parser.add_argument("--once", action="store_true", help="Run one cycle and exit")
+
+    eval_parser = subparsers.add_parser("evaluate-model", help="Evaluate a model artifact")
+    eval_parser.add_argument("--model", default="models/improved_hybrid_trading_agent.zip")
+    eval_parser.add_argument("--episodes", type=int, default=10)
+    eval_parser.add_argument("--report", default="reports/model_evaluation.json")
+
+    promote_parser = subparsers.add_parser("promote-model", help="Promote a candidate model after evaluation")
+    promote_parser.add_argument("--candidate", default="models/candidates/improved_hybrid_trading_agent.zip")
+    promote_parser.add_argument("--production", default="models/improved_hybrid_trading_agent.zip")
+    promote_parser.add_argument("--report", default="reports/model_evaluation.json")
+    promote_parser.add_argument("--force", action="store_true")
+
+    preflight_parser = subparsers.add_parser("preflight", help="Check no-VPS production staging readiness")
+    preflight_parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
+
     subparsers.add_parser("dashboard", help="Launch monitoring dashboard")
 
     signal_parser = subparsers.add_parser("signals", help="Generate trading signals")
@@ -98,9 +115,41 @@ Examples:
                 download_data()
             else:
                 print("📡 Collecting real-time data...")
-                from data_collection import main as collect_data
+                print("Real-time collector is a scheduler and should run as a service. Use historical refresh for one-shot jobs.")
+                import subprocess
+                subprocess.run([sys.executable, "training_data_collection.py"], check=False)
 
-                collect_data()
+        elif args.command == "live":
+            from live_trader import main as live_main
+
+            sys.argv = [sys.argv[0]] + (["--once"] if args.once else [])
+            live_main()
+
+        elif args.command == "evaluate-model":
+            from model_ops import evaluate_model
+            import json
+
+            report = evaluate_model(args.model, args.episodes, args.report)
+            print(json.dumps(report, indent=2, sort_keys=True))
+
+        elif args.command == "promote-model":
+            from model_ops import promote_model
+
+            ok = promote_model(args.candidate, args.production, args.report, args.force)
+            if not ok:
+                raise SystemExit(1)
+
+        elif args.command == "preflight":
+            from production_preflight import print_text_report, run_preflight
+            import json
+
+            report = run_preflight()
+            if args.json:
+                print(json.dumps(report, indent=2, sort_keys=True))
+            else:
+                print_text_report(report)
+            if not report["ready_for_no_vps_stage"]:
+                raise SystemExit(1)
 
         elif args.command == "dashboard":
             print("📈 Launching dashboard...")
@@ -110,7 +159,6 @@ Examples:
             # Try to run streamlit programmatically
             try:
                 import subprocess
-                import sys
 
                 # Get the correct python executable
                 python_exe = sys.executable
